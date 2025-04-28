@@ -1,6 +1,6 @@
 package ru.aston.teamwork.action;
 
-import ru.aston.teamwork.dao.UserDao;
+import ru.aston.teamwork.dao.UserDaoImpl;
 import ru.aston.teamwork.entity.User;
 import ru.aston.teamwork.input.Input;
 import ru.aston.teamwork.output.Output;
@@ -14,7 +14,7 @@ public class ShowAllUsersAction implements UserAction {
     }
 
     @Override
-    public boolean execute(Input input, UserDao userDao, Output out) {
+    public boolean execute(Input input, UserDaoImpl userDao, Output out) {
         out.println("\n=== Список всех пользователей ===");
         List<User> users = userDao.findAll();
         if (users.isEmpty()) {
