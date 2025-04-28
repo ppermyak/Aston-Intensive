@@ -1,6 +1,6 @@
 package ru.aston.teamwork.action;
 
-import ru.aston.teamwork.dao.UserDao;
+import ru.aston.teamwork.dao.UserDaoImpl;
 import ru.aston.teamwork.input.Input;
 import ru.aston.teamwork.output.Output;
 
@@ -29,5 +29,5 @@ public interface UserAction {
      * @param out     способ вывода информации
      * @return {@code true}, если действие выполнено успешно
      */
-    boolean execute(Input input, UserDao userDao, Output out);
+    boolean execute(Input input, UserDaoImpl userDao, Output out);
 }
