@@ -4,8 +4,12 @@ import ru.aston.teamwork.dao.UserDaoImpl;
 import ru.aston.teamwork.entity.User;
 import ru.aston.teamwork.input.Input;
 import ru.aston.teamwork.output.Output;
+import ru.aston.teamwork.validation.UserValidator;
+import ru.aston.teamwork.validation.UserValidatorImpl;
 
 public class CreateUserAction implements UserAction {
+    UserValidator userValidator = new UserValidatorImpl();
+
     @Override
     public String name() {
         return "Создать пользователя";
@@ -15,8 +19,14 @@ public class CreateUserAction implements UserAction {
     public boolean execute(Input input, UserDaoImpl userDao, Output out) {
         out.println("\n=== Создание нового пользователя ===");
         String name = input.askStr("Введите имя: ");
-        String email = input.askStr("Введите email: ");
-        int age = input.askInt("Введите возраст: ");
+        String email;
+        do {
+            email = input.askStr("Введите email: ");
+        } while (!userValidator.emailValidate(email, userDao.findAll()));
+        int age;
+        do {
+            age = input.askInt("Введите возраст: ");
+        } while (!userValidator.ageValidate(age));
         User user = new User();
         user.setName(name);
         user.setEmail(email);
