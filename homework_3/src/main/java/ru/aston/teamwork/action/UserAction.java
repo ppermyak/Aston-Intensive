@@ -1,5 +1,9 @@
 package ru.aston.teamwork.action;
 
+import ru.aston.teamwork.dao.UserDao;
+import ru.aston.teamwork.input.Input;
+import ru.aston.teamwork.output.Output;
+
 /**
  * Интерфейс для действий (команд), выполняемых над пользователями.
  * Каждая реализация представляет собой отдельную операцию (создание, удаление и т. д.).
@@ -20,10 +24,10 @@ public interface UserAction {
     /**
      * Выполняет действие.
      *
-     * @param input                источник ввода данных (например, консоль)
-     * @param simpleUserRepository хранилище пользователей
-     * @param out                  способ вывода информации
+     * @param input   источник ввода данных (например, консоль)
+     * @param userDao хранилище пользователей
+     * @param out     способ вывода информации
      * @return {@code true}, если действие выполнено успешно
      */
-    boolean execute(Input input, SimpleUserRepository simpleUserRepository, Output out);
+    boolean execute(Input input, UserDao userDao, Output out);
 }

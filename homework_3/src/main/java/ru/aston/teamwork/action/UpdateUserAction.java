@@ -1,5 +1,10 @@
 package ru.aston.teamwork.action;
 
+import ru.aston.teamwork.dao.UserDao;
+import ru.aston.teamwork.entity.User;
+import ru.aston.teamwork.input.Input;
+import ru.aston.teamwork.output.Output;
+
 public class UpdateUserAction implements UserAction {
     @Override
     public String name() {
@@ -7,10 +12,10 @@ public class UpdateUserAction implements UserAction {
     }
 
     @Override
-    public boolean execute(Input input, SimpleUserRepository simpleUserRepository, Output out) {
+    public boolean execute(Input input, UserDao userDao, Output out) {
         out.println("\n=== Обновление пользователя ===");
         long id = input.askLong("Введите ID пользователя для обновления: ");
-        User user = simpleUserRepository.findById(id);
+        User user = userDao.findById(id);
         if (user == null) {
             out.println("Пользователь с ID " + id + " не найден");
             return true;
@@ -28,7 +33,7 @@ public class UpdateUserAction implements UserAction {
         if (!ageInput.isEmpty()) {
             user.setAge(ageInput);
         }
-        if (simpleUserRepository.update(user)) {
+        if (userDao.update(user)) {
             out.println("Пользователь успешно обновлен");
         } else {
             out.println("Не удалось обновить пользователя");
