@@ -1,8 +1,8 @@
 package ru.aston.teamwork.action;
 
-import ru.aston.teamwork.dao.UserDaoImpl;
 import ru.aston.teamwork.input.Input;
 import ru.aston.teamwork.output.Output;
+import ru.aston.teamwork.service.UserServiceImpl;
 
 public class ExitAction implements UserAction {
     @Override
@@ -11,7 +11,7 @@ public class ExitAction implements UserAction {
     }
 
     @Override
-    public boolean execute(Input input, UserDaoImpl userDao, Output out) {
+    public boolean execute(Input input, UserServiceImpl userService, Output out) {
         out.println("=== Завершение работы приложения ===");
         if (input.askStr("Вы уверены? (y/n): ").equalsIgnoreCase("y")) {
             out.println("Работа приложения завершена");

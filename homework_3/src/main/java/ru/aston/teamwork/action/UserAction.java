@@ -1,8 +1,8 @@
 package ru.aston.teamwork.action;
 
-import ru.aston.teamwork.dao.UserDaoImpl;
 import ru.aston.teamwork.input.Input;
 import ru.aston.teamwork.output.Output;
+import ru.aston.teamwork.service.UserServiceImpl;
 
 /**
  * Интерфейс для действий (команд), выполняемых над пользователями.
@@ -25,9 +25,9 @@ public interface UserAction {
      * Выполняет действие.
      *
      * @param input   источник ввода данных (например, консоль)
-     * @param userDao хранилище пользователей
+     * @param userService сервис где выполняется логика (создание, чтение, изменение, удаление)
      * @param out     способ вывода информации
      * @return {@code true}, если действие выполнено успешно
      */
-    boolean execute(Input input, UserDaoImpl userDao, Output out);
+    boolean execute(Input input, UserServiceImpl userService, Output out);
 }

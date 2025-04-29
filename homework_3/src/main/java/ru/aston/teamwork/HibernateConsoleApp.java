@@ -8,6 +8,7 @@ import ru.aston.teamwork.input.ConsoleInput;
 import ru.aston.teamwork.input.Input;
 import ru.aston.teamwork.output.ConsoleOutput;
 import ru.aston.teamwork.output.Output;
+import ru.aston.teamwork.service.UserServiceImpl;
 
 import java.util.Arrays;
 import java.util.List;
@@ -20,7 +21,7 @@ public class HibernateConsoleApp {
         this.out = out;
     }
 
-    public void init(Input input, UserDaoImpl dao, List<UserAction> actions) {
+    public void init(Input input, UserServiceImpl userService, List<UserAction> actions) {
         boolean run = true;
         while (run) {
             showMenu(actions);
@@ -30,7 +31,7 @@ public class HibernateConsoleApp {
                 continue;
             }
             UserAction action = actions.get(select);
-            run = action.execute(input, dao, out);
+            run = action.execute(input, userService, out);
         }
     }
 
@@ -47,6 +48,7 @@ public class HibernateConsoleApp {
             Output output = new ConsoleOutput();
             Input input =  new ConsoleInput();
             UserDaoImpl dao = new UserDaoImpl();
+            UserServiceImpl userService = new UserServiceImpl(dao);
             List<UserAction> actions;
             actions = Arrays.asList(
                     new CreateUserAction(),
@@ -56,7 +58,7 @@ public class HibernateConsoleApp {
                     new DeleteUserAction(),
                     new ExitAction()
             );
-            new HibernateConsoleApp(output).init(input, dao, actions);
+            new HibernateConsoleApp(output).init(input, userService, actions);
         } catch (Exception e) {
             LOGGER.error("Ошибка в приложении", e);
             System.err.println("Ошибка: " + e.getMessage());
