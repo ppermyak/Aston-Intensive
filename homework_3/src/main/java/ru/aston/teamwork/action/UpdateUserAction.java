@@ -4,8 +4,12 @@ import ru.aston.teamwork.dao.UserDaoImpl;
 import ru.aston.teamwork.entity.User;
 import ru.aston.teamwork.input.Input;
 import ru.aston.teamwork.output.Output;
+import ru.aston.teamwork.validation.UserValidator;
+import ru.aston.teamwork.validation.UserValidatorImpl;
 
 public class UpdateUserAction implements UserAction {
+    UserValidator userValidator = new UserValidatorImpl();
+
     @Override
     public String name() {
         return "Обновить пользователя";
@@ -21,17 +25,32 @@ public class UpdateUserAction implements UserAction {
             return true;
         }
         out.println("Текущие данные: " + user);
-        String name = input.askStr("Новое имя (оставьте пустым чтобы не менять): ");
-        if (!name.isEmpty()) {
-            user.setName(name);
+        while (true) {
+            String newName = input.askStr("Новое имя (оставьте пустым чтобы не менять): ");
+            if (!newName.isEmpty() && userValidator.newDataValidate(newName, user.getName())) {
+                user.setName(newName);
+                break;
+            } else if (newName.isEmpty()) {
+                break;
+            }
         }
-        String email = input.askStr("Новый email (оставьте пустым чтобы не менять): ");
-        if (!email.isEmpty()) {
-            user.setEmail(email);
+        while (true) {
+            String newEmail = input.askStr("Новый email (оставьте пустым чтобы не менять): ");
+            if (!newEmail.isEmpty() && userValidator.emailValidate(newEmail, userDao.findAll())) {
+                user.setEmail(newEmail);
+                break;
+            } else if (newEmail.isEmpty()) {
+                break;
+            }
         }
-        String ageInput = input.askStr("Новый возраст (оставьте пустым чтобы не менять): ");
-        if (!ageInput.isEmpty()) {
-            user.setAge(ageInput);
+        while (true) {
+            String newAge = input.askStr("Новый возраст (оставьте пустым чтобы не менять): ");
+            if (!newAge.isEmpty() && userValidator.ageValidate(Integer.parseInt(newAge))) {
+                user.setAge(newAge);
+                break;
+            } else if (newAge.isEmpty()) {
+                break;
+            }
         }
         if (userDao.update(user)) {
             out.println("Пользователь успешно обновлен");
