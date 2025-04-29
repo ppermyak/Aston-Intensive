@@ -1,3 +1,5 @@
+import org.hibernate.Session;
+import org.hibernate.Transaction;
 import org.junit.jupiter.api.*;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -6,6 +8,8 @@ import ru.aston.teamwork.config.HibernateConfig;
 import ru.aston.teamwork.dao.UserDaoImpl;
 import ru.aston.teamwork.entity.User;
 
+import javax.persistence.PersistenceException;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -29,6 +33,16 @@ public class UserDaoImplTest {
 
         userDao = new UserDaoImpl();
     }
+
+    @BeforeEach
+    void clearDatabase() {
+        try (Session session = HibernateConfig.getSessionFactory().openSession()) {
+            Transaction tx = session.beginTransaction();
+            session.createQuery("DELETE FROM User").executeUpdate();
+            tx.commit();
+        }
+    }
+
 
     @AfterAll
     static void tearDown() {
@@ -95,6 +109,56 @@ public class UserDaoImplTest {
 
         User deletedUser = userDao.findById(id);
         assertNull(deletedUser);
+    }
+
+    @Test
+    void shouldThrowExceptionWhenSavingUserWithExistingEmail() {
+        User user1 = new User("Bob", "bob@exmple.com", "25");
+        userDao.save(user1);
+
+        User user2 = new User("Bob2", "bob@exmple.com", "26");
+        assertThrows(PersistenceException.class, () -> userDao.save(user2));
+    }
+
+    @Test
+    void shouldThrowExceptionWhenSavingUserWithNullName() {
+        User user = new User(null, "nullname@exmple.com", "25");
+        assertThrows(PersistenceException.class, () -> userDao.save(user));
+    }
+
+    @Test
+    void shouldThrowExceptionWhenSavingUserWithNullEmail() {
+        User user = new User("Null", null, "25");
+        assertThrows(PersistenceException.class, () -> userDao.save(user));
+    }
+
+    @Test
+    void shouldRollbackTransactionOnError() {
+        User user = new User("Max", "max@exmple.com", "30");
+        userDao.save(user);
+
+        User invalidUser = new User("", null, "35");
+        assertThrows(PersistenceException.class, () -> userDao.save(invalidUser));
+
+        List<User> users = userDao.findAll();
+        assertEquals(1, users.size());
+    }
+
+    @Test
+    void shouldNotUpdateCreatedAtWhenUserIsUpdated() {
+        User user = new User("Max", "max@exmple.com", "30");
+        Long id = userDao.save(user);
+
+        LocalDateTime originalCreatedAt = userDao.findById(id).getCreatedAt();
+
+        User toUpdate = userDao.findById(id);
+        toUpdate.setName("Maxim");
+        toUpdate.setAge("31");
+
+        userDao.update(toUpdate);
+
+        User updatedUser = userDao.findById(id);
+        assertEquals(originalCreatedAt, updatedUser.getCreatedAt());
     }
 
 }
