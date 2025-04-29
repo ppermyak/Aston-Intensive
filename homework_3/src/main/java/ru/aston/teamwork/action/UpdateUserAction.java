@@ -1,9 +1,9 @@
 package ru.aston.teamwork.action;
 
-import ru.aston.teamwork.dao.UserDaoImpl;
 import ru.aston.teamwork.entity.User;
 import ru.aston.teamwork.input.Input;
 import ru.aston.teamwork.output.Output;
+import ru.aston.teamwork.service.UserServiceImpl;
 import ru.aston.teamwork.validation.UserValidator;
 import ru.aston.teamwork.validation.UserValidatorImpl;
 
@@ -16,10 +16,10 @@ public class UpdateUserAction implements UserAction {
     }
 
     @Override
-    public boolean execute(Input input, UserDaoImpl userDao, Output out) {
+    public boolean execute(Input input, UserServiceImpl userService, Output out) {
         out.println("\n=== Обновление пользователя ===");
         long id = input.askLong("Введите ID пользователя для обновления: ");
-        User user = userDao.findById(id);
+        User user = userService.findById(id);
         if (user == null) {
             out.println("Пользователь с ID " + id + " не найден");
             return true;
@@ -36,7 +36,7 @@ public class UpdateUserAction implements UserAction {
         }
         while (true) {
             String newEmail = input.askStr("Новый email (оставьте пустым чтобы не менять): ");
-            if (!newEmail.isEmpty() && userValidator.emailValidate(newEmail, userDao.findAll())) {
+            if (!newEmail.isEmpty() && userValidator.emailValidate(newEmail, userService.findAll())) {
                 user.setEmail(newEmail);
                 break;
             } else if (newEmail.isEmpty()) {
@@ -52,7 +52,7 @@ public class UpdateUserAction implements UserAction {
                 break;
             }
         }
-        if (userDao.update(user)) {
+        if (userService.update(user)) {
             out.println("Пользователь успешно обновлен");
         } else {
             out.println("Не удалось обновить пользователя");

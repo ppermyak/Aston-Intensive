@@ -1,9 +1,9 @@
 package ru.aston.teamwork.action;
 
-import ru.aston.teamwork.dao.UserDaoImpl;
 import ru.aston.teamwork.entity.User;
 import ru.aston.teamwork.input.Input;
 import ru.aston.teamwork.output.Output;
+import ru.aston.teamwork.service.UserServiceImpl;
 
 public class FindUserByIdAction implements UserAction {
     @Override
@@ -12,10 +12,10 @@ public class FindUserByIdAction implements UserAction {
     }
 
     @Override
-    public boolean execute(Input input, UserDaoImpl userDao, Output out) {
+    public boolean execute(Input input, UserServiceImpl userService, Output out) {
         out.println("\n=== Поиск пользователя по ID ===");
         long id = input.askLong("Введите ID пользователя: ");
-        User user = userDao.findById(id);
+        User user = userService.findById(id);
         if (user != null) {
             out.println("Найден пользователь: " + user);
         } else {
