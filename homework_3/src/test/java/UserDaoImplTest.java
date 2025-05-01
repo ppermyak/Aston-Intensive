@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class UserDaoImplTest {
 
     @Container
-    private static final PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:13")
+    private static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>("postgres:13")
             .withDatabaseName("user_service_db_test")
             .withUsername("test")
             .withPassword("password");
@@ -27,9 +27,9 @@ public class UserDaoImplTest {
 
     @BeforeAll
     static void setUp() {
-        System.setProperty("hibernate.connection.url", postgres.getJdbcUrl());
-        System.setProperty("hibernate.connection.username", postgres.getUsername());
-        System.setProperty("hibernate.connection.password", postgres.getPassword());
+        System.setProperty("hibernate.connection.url", POSTGRES.getJdbcUrl());
+        System.setProperty("hibernate.connection.username", POSTGRES.getUsername());
+        System.setProperty("hibernate.connection.password", POSTGRES.getPassword());
 
         userDao = new UserDaoImpl();
     }
@@ -42,7 +42,6 @@ public class UserDaoImplTest {
             tx.commit();
         }
     }
-
 
     @AfterAll
     static void tearDown() {
@@ -58,10 +57,9 @@ public class UserDaoImplTest {
     }
 
     @Test
-    void shouldFindUserByIdSuccessfullyWhenUserExists () {
+    void shouldFindUserByIdSuccessfullyWhenUserExists() {
         User user = new User("Anna", "anna@exmple.com", "30");
         Long id = userDao.save(user);
-
         User foundUser = userDao.findById(id);
         assertNotNull(foundUser);
         assertEquals("Anna", foundUser.getName());
@@ -70,7 +68,7 @@ public class UserDaoImplTest {
     }
 
     @Test
-    void shouldReturnAllUsersWhenUsersExistInDatabase () {
+    void shouldReturnAllUsersWhenUsersExistInDatabase() {
         User user1 = new User("John", "john@exmple.com", "40");
         User user2 = new User("Ken", "ken@exmple.com", "45");
 
@@ -160,5 +158,4 @@ public class UserDaoImplTest {
         User updatedUser = userDao.findById(id);
         assertEquals(originalCreatedAt, updatedUser.getCreatedAt());
     }
-
 }
