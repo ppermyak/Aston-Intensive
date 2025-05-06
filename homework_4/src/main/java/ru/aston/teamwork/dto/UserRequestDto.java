@@ -23,5 +23,5 @@ public class UserRequestDto {
     @NotNull(message = "Age cannot be null")
     @Min(value = 0, message = "Age cannot be negative")
     @Max(value = 122, message = "Age cannot be more than 122")
-    private Integer age;
+    private int age;
 }
