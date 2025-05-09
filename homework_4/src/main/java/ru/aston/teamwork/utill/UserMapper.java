@@ -1,9 +1,6 @@
 package ru.aston.teamwork.utill;
 
-import org.mapstruct.BeanMapping;
-import org.mapstruct.Mapper;
-import org.mapstruct.MappingTarget;
-import org.mapstruct.NullValuePropertyMappingStrategy;
+import org.mapstruct.*;
 import ru.aston.teamwork.dto.UserRequestDto;
 import ru.aston.teamwork.dto.UserResponseDto;
 import ru.aston.teamwork.model.User;
@@ -12,6 +9,8 @@ import ru.aston.teamwork.model.User;
 public interface UserMapper {
     User toUser(UserRequestDto userDto);
 
+    @Mapping(target = "name", source = "name")
+    @Mapping(target = "email", source = "email")
     UserResponseDto toUserResponseDto(User user);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)

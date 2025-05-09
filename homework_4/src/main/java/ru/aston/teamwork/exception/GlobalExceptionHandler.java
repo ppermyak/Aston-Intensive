@@ -26,6 +26,12 @@ public class GlobalExceptionHandler {
         return Map.of("error", ex.getMessage());
     }
 
+    @ResponseStatus(HttpStatus.CONFLICT)
+    @ExceptionHandler(EmailAlreadyExistsException.class)
+    public Map<String, String> handleEmailExists(EmailAlreadyExistsException ex) {
+        return Map.of("error", ex.getMessage());
+    }
+
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(IllegalArgumentException.class)
     public Map<String, String> handleIllegalArgument(IllegalArgumentException ex) {

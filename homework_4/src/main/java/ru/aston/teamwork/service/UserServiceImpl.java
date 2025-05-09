@@ -1,10 +1,13 @@
 package ru.aston.teamwork.service;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.annotation.Validated;
 import ru.aston.teamwork.dto.UserRequestDto;
 import ru.aston.teamwork.dto.UserResponseDto;
+import ru.aston.teamwork.exception.EmailAlreadyExistsException;
 import ru.aston.teamwork.exception.UserNotFoundException;
 import ru.aston.teamwork.model.User;
 import ru.aston.teamwork.repository.UserRepository;
@@ -13,6 +16,7 @@ import ru.aston.teamwork.utill.UserMapper;
 import java.util.List;
 
 @Service
+@Validated
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
@@ -20,10 +24,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public UserResponseDto createUser(UserRequestDto userDto) {
-        if (userRepository.existsByEmail(userDto.getEmail())) {
-            throw new IllegalArgumentException("Email already exists");
-        }
+    public UserResponseDto createUser(@Valid UserRequestDto userDto) {
+        validateEmailUniqueness(userDto.getEmail());
 
         User user = mapper.toUser(userDto);
         User savedUser = userRepository.save(user);
@@ -48,13 +50,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public UserResponseDto updateUser(Long id, UserRequestDto userDto) {
+    public UserResponseDto updateUser(Long id, @Valid UserRequestDto userDto) {
         User existingUser = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException(id));
 
-        if (!existingUser.getEmail().equals(userDto.getEmail())
-                && userRepository.existsByEmail(userDto.getEmail())) {
-            throw new IllegalArgumentException("Email already exists");
+        if (!existingUser.getEmail().equals(userDto.getEmail())) {
+            validateEmailUniqueness(userDto.getEmail());
         }
 
         mapper.updateUserFromDto(userDto, existingUser);
@@ -69,5 +70,11 @@ public class UserServiceImpl implements UserService {
             throw new UserNotFoundException(id);
         }
         userRepository.deleteById(id);
+    }
+
+    private void validateEmailUniqueness(String email) {
+        if (userRepository.existsByEmail(email)) {
+            throw new EmailAlreadyExistsException(email);
+        }
     }
 }
