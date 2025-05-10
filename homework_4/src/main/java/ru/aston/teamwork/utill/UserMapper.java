@@ -13,6 +13,8 @@ public interface UserMapper {
 
     @Mapping(target = "name", source = "name")
     @Mapping(target = "email", source = "email")
+    @Mapping(source = "id", target = "id")
+    @Mapping(source = "createdAt", target = "createdAt")
     UserResponseDto toUserResponseDto(User user);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
