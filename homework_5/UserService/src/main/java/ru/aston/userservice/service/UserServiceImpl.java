@@ -2,11 +2,13 @@ package ru.aston.userservice.service;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import ru.aston.userservice.dto.UserRequestDto;
 import ru.aston.userservice.dto.UserResponseDto;
+import ru.aston.userservice.event.UserActionEvent;
 import ru.aston.userservice.exception.EmailAlreadyExistsException;
 import ru.aston.userservice.exception.UserNotFoundException;
 import ru.aston.userservice.model.User;
@@ -22,6 +24,7 @@ import java.util.List;
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final UserMapper mapper;
+    private final KafkaTemplate<String, UserActionEvent> kafkaTemplate;
 
     @Override
     @Transactional
@@ -30,6 +33,10 @@ public class UserServiceImpl implements UserService {
 
         User user = mapper.toUser(userDto);
         User savedUser = userRepository.save(user);
+
+        UserActionEvent userActionEvent = new UserActionEvent("create", userDto.getEmail());
+        kafkaTemplate.send("user-events-topic", userActionEvent);
+
         return mapper.toUserResponseDto(savedUser);
     }
 
@@ -70,7 +77,11 @@ public class UserServiceImpl implements UserService {
         if (!userRepository.existsById(id)) {
             throw new UserNotFoundException(id);
         }
+        String email = userRepository.findById(id).get().getEmail();
         userRepository.deleteById(id);
+
+        UserActionEvent userActionEvent = new UserActionEvent("delete", email);
+        kafkaTemplate.send("user-events-topic", userActionEvent);
     }
 
     private void validateEmailUniqueness(String email) {
