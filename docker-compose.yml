@@ -1,4 +1,3 @@
-
 services:
   postgres:
     image: postgres:13
@@ -12,7 +11,12 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql/data
     networks:
-      - user_service_network
+      - microservices-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U user -d user_service_db" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   kafka-1:
     image: bitnami/kafka:latest
@@ -30,6 +34,14 @@ services:
       - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=PLAINTEXT
     volumes:
       - kafka-1:/bitnami/kafka
+    networks:
+      - microservices-network
+    healthcheck:
+      test: [ "CMD-SHELL", "kafka-topics.sh --bootstrap-server localhost:9092 --list || exit 1" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
 
   kafka-2:
     image: bitnami/kafka:latest
@@ -47,6 +59,14 @@ services:
       - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=PLAINTEXT
     volumes:
       - kafka-2:/bitnami/kafka
+    networks:
+      - microservices-network
+    healthcheck:
+      test: [ "CMD-SHELL", "kafka-topics.sh --bootstrap-server localhost:9094 --list || exit 1" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
 
   kafka-3:
     image: bitnami/kafka:latest
@@ -64,6 +84,105 @@ services:
       - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=PLAINTEXT
     volumes:
       - kafka-3:/bitnami/kafka
+    networks:
+      - microservices-network
+    healthcheck:
+      test: [ "CMD-SHELL", "kafka-topics.sh --bootstrap-server localhost:9096 --list || exit 1" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+
+  config-server:
+    build:
+      context: ./homework_5/config-server
+    container_name: config-server
+    ports:
+      - "8888:8888"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - microservices-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8888/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  discovery-server:
+    build:
+      context: ./homework_5/discovery-server
+    container_name: discovery-server
+    ports:
+      - "8761:8761"
+    depends_on:
+      config-server:
+        condition: service_healthy
+    environment:
+      SPRING_CLOUD_CONFIG_URI: http://config-server:8888
+    networks:
+      - microservices-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8761/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  user-service:
+    build:
+      context: ./homework_5/UserService
+    container_name: user-service
+    ports:
+      - "8081:8081"
+    depends_on:
+      config-server:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_CLOUD_CONFIG_URI: http://config-server:8888
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-server:8761/eureka
+    networks:
+      - microservices-network
+
+  notification-service:
+    build:
+      context: ./homework_5/NotificationService
+    container_name: notification-service
+    ports:
+      - "8080:8080"
+    depends_on:
+      config-server:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+      kafka-1:
+        condition: service_healthy
+    environment:
+      SPRING_CLOUD_CONFIG_URI: http://config-server:8888
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-server:8761/eureka
+    networks:
+      - microservices-network
+
+  api-gateway:
+    build:
+      context: ./homework_5/api-gateway
+    container_name: api-gateway
+    ports:
+      - "8765:8765"
+    depends_on:
+      config-server:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+    environment:
+      SPRING_CLOUD_CONFIG_URI: http://config-server:8888
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-server:8761/eureka
+    networks:
+      - microservices-network
 
 volumes:
   postgres-data:
@@ -72,5 +191,5 @@ volumes:
   kafka-3:
 
 networks:
-  user_service_network:
+  microservices-network:
     driver: bridge
