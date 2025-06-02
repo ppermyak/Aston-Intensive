@@ -8,6 +8,7 @@ import ru.aston.userservice.exception.EmailAlreadyExistsException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+
 public class UserServiceCreateUserTest extends AbstractUserServiceTest{
 
     @Test
